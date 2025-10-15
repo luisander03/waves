@@ -1,0 +1,37 @@
+import React, { useState, useRef, useEffect } from "react";
+import Visualizer from "./Visualizer";
+
+export default function Player() {
+  const audioRef = useRef(null);
+  const [tracks, setTracks] = useState([]);
+  const [current, setCurrent] = useState(null);
+  const [playing, setPlaying] = useState(false);
+
+  // Importar música local
+  const handleFiles = (e) => {
+    const files = Array.from(e.target.files);
+    const newTracks = files.map(file => ({
+      id: URL.createObjectURL(file),
+      name: file.name,
+      file
+    }));
+    setTracks(prev => [...prev, ...newTracks]);
+  };
+
+  // Reproducir pista seleccionada
+  const playTrack = (track) => {
+    setCurrent(track);
+    setPlaying(true);
+    setTimeout(() => audioRef.current.play(), 50);
+  };
+
+  // Pausar / Reproducir
+  const togglePlay = () => {
+    if (!current) return;
+    if (playing) audioRef.current.pause();
+    else audioRef.current.play();
+    setPlaying(!playing);
+  };
+
+  return (
+    <di

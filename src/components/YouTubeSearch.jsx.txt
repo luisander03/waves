@@ -1,0 +1,60 @@
+import React, { useState } from "react";
+import { searchYouTube } from "../api/youtube";
+import YouTubePlayer from "./YouTubePlayer";
+
+export default function YouTubeSearch() {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [currentVideo, setCurrentVideo] = useState(null);
+
+  const handleSearch = async () => {
+    if (!query) return;
+    const videos = await searchYouTube(query);
+    setResults(videos);
+  };
+
+  return (
+    <div style={{ marginTop: 18 }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          type="text"
+          placeholder="Buscar en YouTube..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{
+            flex: 1,
+            padding: 10,
+            borderRadius: 10,
+            border: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(255,255,255,0.04)",
+            color: "#fff",
+          }}
+        />
+        <button className="btn" onClick={handleSearch}>🔍</button>
+      </div>
+
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+        {results.map((video) => (
+          <div
+            key={video.id.videoId}
+            className="track"
+            style={{ cursor: "pointer" }}
+            onClick={() => setCurrentVideo(video.id.videoId)}
+          >
+            <img
+              src={video.snippet.thumbnails.default.url}
+              alt=""
+              style={{ width: 60, height: 45, borderRadius: 8 }}
+            />
+            <div style={{ marginLeft: 10 }}>
+              <div style={{ fontWeight: 600 }}>{video.snippet.title}</div>
+              <div className="small">{video.snippet.channelTitle}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {currentVideo && <YouTubePlayer videoId={currentVideo} />}
+    </div>
+  );
+}

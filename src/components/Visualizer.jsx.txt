@@ -1,0 +1,57 @@
+import React, { useEffect, useRef } from "react";
+
+export default function Visualizer({ audioRef }) {
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioCtx.createAnalyser();
+    const source = audioCtx.createMediaElementSource(audioRef.current);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 64;
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    const draw = () => {
+      animationRef.current = requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(dataArray);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const barWidth = (canvas.width / bufferLength) * 1.5;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i];
+        const r = 126;
+        const g = 231;
+        const b = 200;
+
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+
+        x += barWidth + 2;
+      }
+    };
+
+    draw();
+
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [audioRef]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={360}
+      height={80}
+      className="canvasWrap"
+      style={{ marginTop: 12, borderRadius: 12 }}
+    />
+  );
+}

@@ -1,0 +1,23 @@
+workflows:
+  build_android:
+    name: Build Android APK
+    max_build_duration: 60
+    environment:
+      vars:
+        NODE_VERSION: 18
+#      android_signing:
+#       - waves_key
+    scripts:
+      - name: Instalar dependencias
+        script: |
+          npm install
+          npm run build
+          npm install @capacitor/core @capacitor/cli
+          npx cap add android || echo "Android ya agregado"
+          npx cap copy
+      - name: Compilar APK
+        script: |
+          cd android
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/**/*.apk
